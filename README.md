@@ -3,14 +3,14 @@
 This is repository for Microbiome analysis for Nicole's data from Jornada(NMSU). 
 Currently, these data are from Flowcell913(16S) at UCR.
 
-##Current projects include
+## Current projects include
 
-1.Fred
+1. Fred
 
-2.Andrew
+2. Andrew
 
-3.Claudia
+3. Claudia
 
-4.Chase
+4. Chase
 
--Nat- updated on 10/26/18
+*-Nat- updated on 10/26/18*
