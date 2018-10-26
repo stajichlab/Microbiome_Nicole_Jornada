@@ -5,7 +5,7 @@ Currently, these data are from Flowcell913(16S) at UCR.
 
 ## Current projects include
 
-1. Fred
+1. [Fred](FRED/)
 
 2. Andrew
 
