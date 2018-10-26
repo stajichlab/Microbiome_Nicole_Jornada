@@ -1,0 +1,264 @@
+---
+title: "FRED_Project_CCAenvfit"
+author: "Nat Pombubpa"
+date: "Updated on October 26, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#This is a documentation for generating CCA plot with environmental fit
+Note: environmental data are imported with metadata/mapping file. This approach use phyloseq object and plot_ordination.
+
+
+###STEP1: Load all necessary packages for analysis
+More information about Phyloseq can be found at the following link: [Phyloseq](https://joey711.github.io/phyloseq/)
+If you get error in this step, you probably need to install any packages which causes error.
+
+```{r warning=FALSE, message=FALSE}
+library(ape)
+library(vegan)
+library(plyr)
+library(dplyr)
+library(scales)
+library(grid)
+library(reshape2)
+library(phyloseq)
+library(magrittr)
+library(ggplot2)
+library(ggpubr)
+library(data.table)
+```
+
+###STEP2: Import Mapping file (metadate file)
+1.Check mapping file before import to R, R will automatically change sample name that starts with number or contain “-” in sample name. If you get error in this step, you should check sample name first. 
+
+2.First column of first row should not start with #, R will not read the first row that starts with #
+
+3.You can choose which samples to include in analysis by indicating specific group in the column
+
+4.This mapping file had been modified to remove special characters in environmental data
+
+```{r warning=FALSE}
+meta = read.table("Jornada16S_mappingfileFAH.txt",
+                  header=TRUE,row.names=1,
+                  sep="\t",stringsAsFactors=FALSE)
+```
+
+###STEP3: Construct sample_data-class using imported metadata
+
+```{r warning=FALSE}
+sampleData <- sample_data(meta)
+```
+
+###STEP4: Import OTU table
+OTU table from Jornada 16S data is “Pietras16S.otu_table.fix.txt”.
+
+```{r warning=FALSE}
+otus <- read.table("Pietras16S.otu_table.fix.txt",
+                   header=T,sep="\t",row.names = 1)
+otumat <- as(as.matrix(otus), "matrix")
+OTU = otu_table(otumat, taxa_are_rows = TRUE)
+```
+
+###STEP5: Import taxonomy table
+Taxonmy table generated from AMPtk need to be rearranged using following script.
+
+“perl rdp_taxonmy2mat.pl<Input_taxonmy.txt>Output_taxonomy.txt”
+
+rdp_taxonomy2mat.pl was created by Professor Jason E. Stajich
+
+```{r warning=FALSE}
+taxmat <- read.table("Pietras16S.taxonomy.fix.txt", 
+                     header=T,sep="\t",row.names=1)
+taxmat <- as(as.matrix(taxmat),"matrix")
+TAX = tax_table(taxmat)
+```
+
+###STEP6: Import phylogenetic tree
+Phylogenetic tree can also be include for furthur phylogenetic analysis. The tree was generated when we run AMPtk on Discovery and can be dowload using Rsync.
+<p> Rsync -ai yourusername[AT]discovery.nmsu.edu:/PATH_to_File PATH_to_Working_Directory <br/>
+
+```{r warning=FALSE}
+treefile = "Pietras16S.tree.phy"
+tree = read.tree(treefile)
+```
+
+###STEP7: Construct Phyloseq object
+To construct phyloseq object, otu table, taxonomy table, and sampleData are required. Phylogenetic tree can be included, but it is not necessary for constructing phyloseq object.
+Construct Phyloseq object called "Physeq"
+
+```{r warning=FALSE}
+physeq = phyloseq(OTU,TAX,sampleData,tree)
+```
+
+###STEP8: Check phyloseq object
+This should indicate that your physeq is a "phyloseq-class experiment-level object"
+
+```{r warning=FALSE}
+physeq
+```
+
+###STEP9: Remove singletons
+Remove any OTUs that present only one time.
+
+```{r }
+physeq.prune = prune_taxa(taxa_sums(physeq) > 1, physeq)
+```
+
+```{r warning=FALSE}
+physeq.prune
+```
+
+###STEP10: Check read counts to check dataset
+Check read counts: any samples that have very low reads should be removed.
+[Ref](http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-01-Answers.html)
+
+```{r}
+readcount = data.table(as(sample_data(physeq.prune), "data.frame"),
+                 TotalReads = sample_sums(physeq.prune), 
+                 keep.rownames = TRUE)
+setnames(readcount, "rn", "SampleID")
+
+#For plotting, use command below.
+#SeqDepth = ggplot(readcount, aes(TotalReads)) + geom_histogram() + ggtitle("Sequencing Depth")
+```
+
+```{r}
+readcount = readcount[order(readcount$TotalReads), c("SampleID", "TotalReads")]
+```
+
+```{r}
+head(readcount)
+```
+
+###STEP11:Rarefy OTUs to a minimum number of reads
+Rarefy OTUs (remove any samples that has very low number of reads). In this case, no sample was remove because number of reads are over 20,000 however, sample.size was indicated to rarefy number reads to the smallest size (lowest number of reads).
+```{r warning=FALSE}
+set.seed(711)
+physeq.prune.rarefy = rarefy_even_depth(physeq.prune, sample.size = 29454, replace = FALSE, trimOTUs = TRUE)
+physeq.prune.rarefy
+```
+
+###STEP12: Calculate ordinate and distance using CCA + PERMANOVA
+
+```{r}
+ps.dist = phyloseq::distance(physeq.prune.rarefy, "unifrac")
+```
+
+Using adonis funciton to run PERMANOVA on distance matrix generated from command above. The currently preferred analysis for evaluating differences among groups is PERMANOVA. This analysis partitions sums of squares using dissimilarities, evaluating differences in the centroids of groups in multivariate space. The vegan functions “adonis” is used to compute PERMANOVA in R. 
+
+```{r}
+set.seed(1)
+adonis(ps.dist ~EC+pH+Clay+Silt+Sand+Gravel
+                                       +Sand_Fraction1to2mm+Sand_Fraction.5to1mm+Sand_Fraction.25to.5mm
+                                       +Sand_Fraction.1to.25.mm+Sand_Fraction.05to.1mm+MSM_No_Cover.pct.
+                                       +MSM_Total_Cover.pct.+MSM_Thick_Cover.pct.Thick.Average
+                                       +MSM_Patchy_Cover.pct.+MSM_Thick_Patchy_Togther_Cover.pct., as(sample_data(physeq.prune.rarefy),"data.frame"))
+```
+
+Using "formaula" to indicate environmental factors for distance/ordinate calculation. We will only take significant environmental vairables from PERMANOVA results which are EC, pH, Clay, Silt, Gravel, and Sand_Fraction.25to.5mm.
+
+```{r}
+physeq.prune.rarefy.ps.cca <- ordinate(physeq.prune.rarefy, "CCA", 
+                                       formula = ~EC+pH+Clay+Silt+Sand+Gravel
+                                       +Sand_Fraction.25to.5mm)
+```
+
+###STEP13: Plot ordination
+
+```{r}
+plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "samples", 
+                color = "Site", shape = "Site") + ggtitle("Bacterial Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+add ordination plot to a variable "pcca"
+
+```{r}
+pcca = plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "samples", 
+                       color = "Site", shape = "Site")
+```
+
+###STEP14: Get environmental distance from CCA to arrows
+
+```{r}
+arrowdist <- vegan::scores(physeq.prune.rarefy.ps.cca, display = c("bp"))
+```
+
+Check data for arrow distance, you should see your environmental factor with distances (CCA1 and CCA2)
+
+```{r}
+head(arrowdist)
+```
+
+###STEP15: Add arrow distance to data frame
+
+```{r}
+arrowdf <- data.frame(labels = rownames(arrowdist), arrowdist)
+```
+
+Check data frame for arrow distance
+
+```{r}
+head(arrowdf)
+```
+
+###STEP16: Define arrow starting point and labels
+
+```{r}
+arrow_map = aes(xend = CCA1, yend = CCA2, x = 0, y = 0, shape = NULL, color = NULL, label = labels)
+label_map = aes(x = 1.1 * CCA1, y = 1.1 * CCA2, shape = NULL, color = NULL, label = labels)
+```
+
+###STEP17: Add environemntal arrow data to plot 
+
+```{r warning=FALSE}
+arrowhead = arrow(length = unit(0.05, "npc"))
+pcca.envfit = pcca + geom_segment(arrow_map, size = 0.8, data = arrowdf, color = "gray", 
+    arrow = arrowhead) + geom_text(label_map, size = 3, data = arrowdf) + 
+  ggtitle("Bacterial Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+###STEP18: CCA plot with environmental fit
+
+Now, the CCA plot should inculde environmental arrows.
+
+```{r warning=FALSE}
+pcca.envfit
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
