@@ -35,7 +35,7 @@ library(data.table)
 ###STEP2: Import Mapping file (metadate file)
 1.Check mapping file before import to R, R will automatically change sample name that starts with number or contain “-” in sample name. If you get error in this step, you should check sample name first. 
 
-2.First column of first row should not start with #, R will not read the first row that starts with #
+2.First column of first row should not start with #, R will not read the first row that starts with '#'
 
 3.You can choose which samples to include in analysis by indicating specific group in the column
 
@@ -230,7 +230,36 @@ pcca.envfit
 ```
 
 
+###Testing with Ordistep
 
+```{r}
+colnames(meta)
+```
+
+
+```{r}
+metacca = meta[c(10:25)]
+```
+
+```{r}
+colnames(metacca)
+```
+
+```{r}
+TOTU = t(OTU)
+```
+
+```{r}
+ps.cca = cca(TOTU ~ 1, metacca)
+```
+
+```{r}
+ps.cca1 = cca(TOTU ~ ., metacca)
+```
+
+```{r}
+ordistep(ps.cca, scope=formula(ps.cca1), perm.max=999)
+```
 
 
 
