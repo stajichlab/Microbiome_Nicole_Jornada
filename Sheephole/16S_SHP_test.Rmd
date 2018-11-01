@@ -1,0 +1,12 @@
+---
+title: "16S_SHP_test"
+author: "Nat Pombubpa"
+date: "Updated on November 1, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Documentation for Qiime2 Silva extracted length classifier on Sheephole crusts samples
