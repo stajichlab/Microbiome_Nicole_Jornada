@@ -229,51 +229,56 @@ Now, the CCA plot should inculde environmental arrows.
 pcca.envfit
 ```
 
-
-###Testing with Ordistep
-
-```{r}
-colnames(meta)
-```
-
+###STEP19: Alpha diversity
+Check metadata header to select variables to test for alpha diversity differences.
+In this case, we will focus on Site and DisturbanceType
 
 ```{r}
-metacca = meta[c(10:25)]
+head(sample_data(physeq.prune.rarefy))
 ```
+
+####Plot Alpha diversity for Site (5 vegetation types)
+Anova can be added direclty to alpha diversity plot using "stat_compare_means"
 
 ```{r}
-colnames(metacca)
+physeq.prune.rarefy.plot.richness = plot_richness(physeq.prune.rarefy, x="Site", color=("Site"), measures=c("Shannon")) + 
+  geom_boxplot() + ggtitle("Bacterial Alpha Diversity (Shannon) by Site") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  stat_compare_means(method = "anova", label.y = 6.85)
+
+physeq.prune.rarefy.plot.richness
 ```
+
+To double check anova , p-value, follwing codes should provide p-value for the group that is being tested.
+```{r}
+alpha.diversity = estimate_richness(physeq.prune.rarefy, measures = c("Shannon"))
+data.anova = cbind(sample_data(physeq.prune.rarefy), alpha.diversity)
+physeq.prune.rarefy.anova = aov(Shannon ~ Site, data.anova)
+summary(physeq.prune.rarefy.anova)
+```
+
+####Plot Alpha diversity for Disturbance Type
+T-test can be added direclty to alpha diversity plot using "stat_compare_means" becuase there are two catgories to compare.
 
 ```{r}
-TOTU = t(OTU)
+physeq.prune.rarefy.plot.richness.disturbance = plot_richness(physeq.prune.rarefy, x="DisturbanceType", color=("DisturbanceType"), 
+                                                              measures=c("Shannon")) + 
+  geom_boxplot() + ggtitle("Bacterial Alpha Diversity (Shannon) by Disturbance Type") + 
+  stat_compare_means(method = "t.test", label.y = 6.82) + theme_bw() + theme(plot.title = element_text(hjust = 0.5))
+
+physeq.prune.rarefy.plot.richness.disturbance
 ```
+
+To double check t-test , p-value, follwing codes should provide p-value for the group that is being tested.
 
 ```{r}
-ps.cca = cca(TOTU ~ 1, metacca)
+alpha.diversity = estimate_richness(physeq.prune.rarefy, measures = c("Shannon"))
+SAM = sample_data(physeq.prune.rarefy)
+Disturbed = alpha.diversity[SAM[,'DisturbanceType'] == 'D',]
+Undisturbed = alpha.diversity[SAM[,'DisturbanceType'] == 'U',]
+t.test(Disturbed, Undisturbed)
 ```
-
-```{r}
-ps.cca1 = cca(TOTU ~ ., metacca)
-```
-
-```{r}
-ordistep(ps.cca, scope=formula(ps.cca1), perm.max=999)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
