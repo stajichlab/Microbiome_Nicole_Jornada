@@ -1,7 +1,7 @@
 ---
 title: "FRED_Project_CCAenvfit"
 author: "Nat Pombubpa"
-date: "Updated on October 26, 2018"
+date: "Updated on December 4, 2018"
 output: html_document
 ---
 
@@ -42,7 +42,7 @@ library(data.table)
 4.This mapping file had been modified to remove special characters in environmental data
 
 ```{r warning=FALSE}
-meta = read.table("Jornada16S_mappingfileFAH.txt",
+meta = read.table("FredMetaTest.txt",
                   header=TRUE,row.names=1,
                   sep="\t",stringsAsFactors=FALSE)
 ```
@@ -171,14 +171,14 @@ physeq.prune.rarefy.ps.cca <- ordinate(physeq.prune.rarefy, "CCA",
 
 ```{r}
 plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "samples", 
-                color = "Site", shape = "Site") + ggtitle("Bacterial Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
+                color = "Site", shape = "Site", label = "ID") + ggtitle("Bacterial Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
 ```
 
 add ordination plot to a variable "pcca"
 
 ```{r}
 pcca = plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "samples", 
-                       color = "Site", shape = "Site")
+                       color = "Site", shape = "Site", label = "ID")
 ```
 
 ###STEP14: Get environmental distance from CCA to arrows
@@ -201,7 +201,7 @@ arrowdf <- data.frame(labels = rownames(arrowdist), arrowdist)
 
 Check data frame for arrow distance
 
-```{r}
+```{r} 
 head(arrowdf)
 ```
 
