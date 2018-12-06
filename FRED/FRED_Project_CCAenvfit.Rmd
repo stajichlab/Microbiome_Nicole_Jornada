@@ -1,7 +1,7 @@
 ---
 title: "FRED_Project_CCAenvfit"
 author: "Nat Pombubpa"
-date: "Updated on December 4, 2018"
+date: "Updated on December 6, 2018"
 output: html_document
 ---
 
@@ -178,7 +178,7 @@ add ordination plot to a variable "pcca"
 
 ```{r}
 pcca = plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "samples", 
-                       color = "Site", shape = "Site", label = "ID")
+                       color = "Site", shape = "Site", label = "Description")
 ```
 
 ###STEP14: Get environmental distance from CCA to arrows
@@ -229,6 +229,14 @@ Now, the CCA plot should inculde environmental arrows.
 pcca.envfit
 ```
 
+Save Beta diversity plot
+
+```{r warning=FALSE}
+pdf("Bacterial Beta Diversity (CCA).pdf", width = 10, height = 8 )
+pcca.envfit
+dev.off()
+```
+
 ###STEP19: Alpha diversity
 Check metadata header to select variables to test for alpha diversity differences.
 In this case, we will focus on Site and DisturbanceType
@@ -236,6 +244,19 @@ In this case, we will focus on Site and DisturbanceType
 ```{r}
 head(sample_data(physeq.prune.rarefy))
 ```
+
+####Plot Alpha diversity for all samples
+```{r}
+physeq.prune.rarefy.plot.richness.all = plot_richness(physeq.prune.rarefy, x="Description", color=("Site"), measures=c("Shannon")) + 
+  geom_boxplot() + ggtitle("Bacterial Alpha Diversity (Shannon)") + 
+  theme_bw() + 
+  theme(plot.title = element_text(hjust = 0.5))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+physeq.prune.rarefy.plot.richness.all
+```
+
+
 
 ####Plot Alpha diversity for Site (5 vegetation types)
 Anova can be added direclty to alpha diversity plot using "stat_compare_means"
