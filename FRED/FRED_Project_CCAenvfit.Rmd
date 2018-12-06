@@ -232,7 +232,7 @@ pcca.envfit
 Save Beta diversity plot
 
 ```{r warning=FALSE}
-pdf("Bacterial Beta Diversity (CCA).pdf", width = 10, height = 8 )
+pdf("Bacterial_Beta_Diversity_CCA.pdf", width = 10, height = 8 )
 pcca.envfit
 dev.off()
 ```
