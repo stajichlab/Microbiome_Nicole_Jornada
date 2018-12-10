@@ -232,9 +232,9 @@ pcca.envfit
 Save Beta diversity plot
 
 ```{r warning=FALSE}
-pdf("Bacterial_Beta_Diversity_CCA.pdf", width = 10, height = 8 )
-pcca.envfit
-dev.off()
+#pdf("Bacterial_Beta_Diversity_CCA.pdf", width = 10, height = 8 )
+#pcca.envfit
+#dev.off()
 ```
 
 ###STEP19: Alpha diversity
@@ -302,7 +302,13 @@ t.test(Disturbed, Undisturbed)
 ```
 
 
+```{r}
+ps.dist = phyloseq::distance(physeq.prune.rarefy, "bray")
+```
 
+```{r}
+str(ps.dist)
+```
 
 
 
