@@ -1,7 +1,7 @@
 ---
 title: "FRED_Project_CCAenvfit"
 author: "Nat Pombubpa"
-date: "Updated on December 6, 2018"
+date: "Updated on January 4, 2019"
 output: html_document
 ---
 
@@ -181,6 +181,11 @@ pcca = plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.cca, type = "
                        color = "Site", shape = "Site", label = "Description")
 ```
 
+
+```{r}
+pcca + scale_colour_manual(values = c("Creosote" = "red","Grassland" = "darkolivegreen4","Mesquite" = "green", "Playa" = "blue", "Tarbush" = "purple"))
+```
+
 ###STEP14: Get environmental distance from CCA to arrows
 
 ```{r}
@@ -225,8 +230,13 @@ pcca.envfit = pcca + geom_segment(arrow_map, size = 0.8, data = arrowdf, color =
 
 Now, the CCA plot should inculde environmental arrows.
 
-```{r warning=FALSE}
+```{r}
 pcca.envfit
+```
+
+
+```{r warning=FALSE}
+pcca.envfit + scale_colour_manual(values = c("Creosote" = "blue","Grassland" = "darkolivegreen4","Mesquite" = "green", "Playa" = "red", "Tarbush" = "purple"))
 ```
 
 Save Beta diversity plot
