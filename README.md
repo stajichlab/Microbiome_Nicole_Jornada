@@ -5,14 +5,10 @@ Currently, these data are from Flowcell913(16S) at UCR.
 
 ## Current projects include
 
-1. [Fred](FRED/)
+1. [Jornada](Jornada/)
 
-2. Andrew
+2. [Fred-Archive](FRED/)
 
-3. Claudia
+3. [Sheephole](Sheephole/)
 
-4. Chase
-
-5. [Sheephole](Sheephole/)
-
-*-Nat- updated on 12/04/18*
+*-Nat- updated on 02/25/19*
