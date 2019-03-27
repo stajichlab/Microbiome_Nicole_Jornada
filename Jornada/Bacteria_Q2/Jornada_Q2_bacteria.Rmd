@@ -1,7 +1,7 @@
 ---
 title: "Jornada_Q2_bacteria"
 author: "Nat Pombubpa"
-date: "updated on 2/25/2019"
+date: "updated on 3/27/2019"
 output: html_document
 ---
 
@@ -226,27 +226,40 @@ physeq.prune.rarefy
 ###STEP12.1: Extract OTUs table from Phyloseq
 
 ```{r}
-Filtered_OTUs_table = otu_table(physeq.prune.rarefy)
+#Filtered_OTUs_table = otu_table(physeq.prune.rarefy)
 ```
 
 Save "filtered" otu table from Phyloseq for Vegan NMDS
 ```{r}
-write.csv(Filtered_OTUs_table, file="Filtered_OTUs_table.csv")
+#write.csv(Filtered_OTUs_table, file="Filtered_OTUs_table.csv")
 ```
 
 ###STEP12.2: Extract Taxonomy table from Phyloseq
 
 ```{r}
-Filtered_TAX_table = tax_table(physeq.prune.rarefy)
+#Filtered_TAX_table = tax_table(physeq.prune.rarefy)
 ```
 
 Save "filtered" TAX table from Phyloseq for Vegan NMDS
 ```{r}
-write.csv(Filtered_TAX_table, file="Filtered_TAX_table.csv")
+#write.csv(Filtered_TAX_table, file="Filtered_TAX_table.csv")
 ```
 
 
+####STEP13: Subset Kingdom
 
+Get actual name of Kingdom
+```{r}
+Kingdoms = as.character(get_taxa_unique(physeq.prune.rarefy, "Kingdom"))
+Kingdoms = Kingdoms[complete.cases(Kingdoms)]
+Kingdoms
+```
+
+Sunset Kingdom
+```{r}
+physeq.prune.rarefy.archaea = subset_taxa(physeq.prune.rarefy, Kingdom == "D_0__Archaea")
+physeq.prune.rarefy.archaea
+```
 
 
 
