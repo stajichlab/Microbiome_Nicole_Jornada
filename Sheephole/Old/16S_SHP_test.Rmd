@@ -140,7 +140,7 @@ tree = read.tree(treefile)
 3. You can choose which samples to include in analysis by indicating specific group in the column
 
 ```{r warning=FALSE}
-meta = read.table("Q2FWMojaveBacMetadata.tsv",
+meta = read.table("DOE.Q2FWMojaveBacMetadata.tsv",
                   header=TRUE,row.names=1,
                   sep="\t",stringsAsFactors=FALSE)
 ```
@@ -280,12 +280,12 @@ sample_data(Bac.physeq.prune.rarefy)
 ###STEP14: Beta Diversity Plot
 
 ```{r }
-plot_ordination(Bac.physeq.prune.rarefy, physeq.prune.ord, type = "samples", color = "Crust_type", shape = "Crust_type", label = "SampleName")  + theme_bw() + ggtitle("Bacterial Beta Diversity (PCoA) by Crust_type (Sheephole)") + theme(plot.title = element_text(hjust = 0.5)) + stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Crust_type)) + geom_point(size=3)
+plot_ordination(Bac.physeq.prune.rarefy, physeq.prune.ord, type = "samples", color = "Crust_type", shape = "Crust_type", label = "SampleName")  + theme_bw() + ggtitle("Bacterial Beta Diversity (PCoA) by Crust_type (Sheephole)") + theme(plot.title = element_text(hjust = 0.5)) + stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Crust_type)) + geom_point(size=4) 
 ```
 
 ```{r}
-pdf("./Figures/DOE.Beta_div_Bac_SHP_w_SampleName.pdf", width = 8, height = 5)
-plot_ordination(Bac.physeq.prune.rarefy, physeq.prune.ord, type = "samples", color = "Crust_type", shape = "Crust_type", label = "SampleName")  + theme_bw() + ggtitle("Bacterial Beta Diversity (PCoA) by Crust_type (Sheephole)") + theme(plot.title = element_text(hjust = 0.5)) + stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Crust_type)) + geom_point(size=3)
+pdf("./Figures/DOE.Beta_div_Bac_SHP_no_outliers_w_SampleName.pdf", width = 8, height = 5)
+plot_ordination(Bac.physeq.prune.rarefy, physeq.prune.ord, type = "samples", color = "Crust_type", shape = "Crust_type", label = "SampleName")  + theme_bw() + ggtitle("Bacterial Beta Diversity (PCoA) by Crust_type (Sheephole)") + theme(plot.title = element_text(hjust = 0.5)) + stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Crust_type)) + geom_point(size=4)
 dev.off()
 ```
 
@@ -365,6 +365,12 @@ taxcom_actinobacteria = ggplot(data = psmelt(Bac.physeq.prune.rarefy.actinobacte
 print(taxcom_actinobacteria)
 ```
 
+```{r}
+pdf("./Figures/DOE.Actinobacteria_taxcom_Bac_SHP_relative_abundance.pdf", width = 11, height = 7)
+taxcom_actinobacteria
+dev.off()
+```
+
 
 ```{r}
 Bac.physeq.prune.rarefy.Cyanobacteria = subset_taxa(Bac.physeq.prune.rarefy, Phylum == "D_1__Cyanobacteria")
@@ -376,4 +382,60 @@ taxcom_Cyanobacteria = ggplot(data = psmelt(Bac.physeq.prune.rarefy.Cyanobacteri
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 print(taxcom_Cyanobacteria)
 ```
+
+```{r}
+pdf("./Figures/DOE.Cyanobacteria_taxcom_Bac_SHP_relative_abundance.pdf", width = 8.5, height = 5.5)
+taxcom_Cyanobacteria
+dev.off()
+```
+
+
+```{r}
+Bac.physeq.prune.rarefy.Firmicutes = subset_taxa(Bac.physeq.prune.rarefy, Phylum == "D_1__Firmicutes")
+```
+
+```{r fig.height=5, fig.width=8, fig.align="center"}
+taxcom_Firmicutes = ggplot(data = psmelt(Bac.physeq.prune.rarefy.Firmicutes), mapping = aes_string(x = "Crust_type" ,y = "Abundance", fill = "Family" )) + geom_bar(stat="identity", position="fill") + 
+  ggtitle("Sheephole Taxonomic Composition (Firmicutes) by Crust_type")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+print(taxcom_Firmicutes)
+```
+
+```{r}
+pdf("./Figures/DOE.Firmicutes_taxcom_Bac_SHP_relative_abundance.pdf", width = 8, height = 5)
+taxcom_Firmicutes
+dev.off()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
