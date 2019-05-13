@@ -1,0 +1,5 @@
+SampleID	Site	Crust_type	Crust_type_Site	Description
+#q2:types	categorical	categorical	categorical	categorical
+GLC	SHP	GLC	SHP.GLC	Nicole
+CLC	SHP	CLC	SHP.CLC	Nicole
+LAC	SHP	LAC	SHP.LAC	Nicole
