@@ -1,7 +1,7 @@
 ---
 title: "16S_SHP_test"
 author: "Nat Pombubpa"
-date: "Updated on May 13, 2019"
+date: "Updated on May 14, 2019"
 output: html_document
 ---
 
@@ -30,8 +30,8 @@ library(ggplot2)
 library(ggpubr)
 library(data.table)
 library(tidyr)
-#library(labdsv)
-library(indicspecies)
+library(labdsv)
+#library(indicspecies)
 ```
 
 ###STEP2: Transition data from Qiime2 to Phyloseq
@@ -428,6 +428,10 @@ physeq.prune.rarefy.merge.Crust_type
 ```
 
 ```{r}
+physeq.prune.rarefy.merge.Crust_type = subset_samples(physeq.prune.rarefy.merge.Crust_type, Crust_type_Site !="SHP.GLC")
+```
+
+```{r}
 physeq.prune.rarefy.merge.Crust_type.binary = transform_sample_counts(physeq.prune.rarefy.merge.Crust_type, function(abund) 1*(abund>0))
 ```
 
@@ -712,14 +716,6 @@ indic.physeq
 ```
 
 ```{r}
-indic.physeq.noGLC = subset_samples(indic.physeq, Crust_type !="GLC")
-```
-
-```{r}
-indic.physeq.noGLC
-```
-
-```{r}
 sample_data(indic.physeq)$Crust_type = factor(sample_data(indic.physeq)$Crust_type, levels = c("LAC", "CLC", "GLC"))
 ```
 
@@ -746,6 +742,51 @@ print(Heatmap.indic.physeq.plot)
 ```{r}
 ggsave("./Figures/Heatmap_indicator_species_Genuslevel_0.01P.png", plot = Heatmap.indic.physeq.plot, width = 12, height = 8)
 ```
+
+
+
+###Checking indicator species using abundance table
+
+```{r}
+indic.TAX = tax_table(indic.physeq)
+```
+
+```{r warning=FALSE}
+otu <- read.table("MojaveBacQ2FWLE.otu_table.fix.txt",header=T,sep="\t")
+otus.filtered = otu[otu$OTU.ID %in% OTU_SF_merge_crust_type_endemic_df$OTUendemic,]
+indic.otus.filtered = otus.filtered[otus.filtered$OTU.ID %in% row.names(indvalsummary),]
+indic.otus.filtered.rn = indic.otus.filtered[,-1]
+rownames(indic.otus.filtered.rn) = indic.otus.filtered[,1]
+indic.otumat.endemic <- as(as.matrix(indic.otus.filtered.rn), "matrix")
+indic.OTU.endemic = otu_table(indic.otumat.endemic, taxa_are_rows = TRUE)
+```
+
+```{r warning=FALSE}
+abundance.indic.physeq = phyloseq(indic.OTU.endemic,indic.TAX,sampleData)
+```
+
+```{r}
+abundance.indic.physeq
+```
+
+```{r}
+abundance.indic.physeq.noGLC = subset_samples(abundance.indic.physeq, Crust_type !="GLC")
+```
+
+```{r}
+Heatmap.abundance.indic.physeq.noGLC.plot = plot_heatmap(abundance.indic.physeq.noGLC, "NMDS", "bray", "Crust_type", "Genus", sample.order = "Crust_type")+ ggtitle("Bacterial endemic indicator spcecies abundance") + theme(plot.title = element_text(hjust = 0.5))
+print(Heatmap.abundance.indic.physeq.noGLC.plot)
+
+ggsave("./Figures/Bacterial_endemic_indicator_species_heatmap_Genus_May14.png", plot = Heatmap.abundance.indic.physeq.noGLC.plot, width = 12, height = 8)
+```
+
+
+
+
+
+
+
+
 
 
 
