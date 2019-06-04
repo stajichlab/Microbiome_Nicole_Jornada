@@ -1,7 +1,7 @@
 ---
 title: "16S_SHP_test"
 author: "Nat Pombubpa"
-date: "Updated on May 14, 2019"
+date: "Updated on May 15, 2019"
 output: html_document
 ---
 
@@ -545,6 +545,13 @@ phyloGlom = tax_glom(Bac.physeq.prune.rarefy,taxrank = "Species")
 ```{r}
 phyloGlom
 ```
+
+Subset samples for specific phyla
+```{r}
+phyloGlom = subset_taxa(phyloGlom, Phylum == "D_1__Cyanobacteria")
+```
+
+
 Instead of using unique Species name, OTU.ID will be used instead becasue they are unique
 ```{r}
 glomTax = tax_table(phyloGlom)[,"OTU.ID"]
@@ -610,7 +617,7 @@ LAC.Crust_type.SHP = indval(ASV.SHP.no0,Crust_type.SHP$Crust_type)
 ```
 
 ```{r}
-summary(LAC.Crust_type.SHP, p = 0.01, type = "short")
+summary(LAC.Crust_type.SHP, p = 0.05, type = "short")
 ```
 
 ```{r}
@@ -629,10 +636,10 @@ LAC.Crust_type.SHP$indcls
 ###Get Significant Indicators (203 ASVs)
 
 ```{r}
-gr <- LAC.Crust_type.SHP$maxcls[LAC.Crust_type.SHP$pval<=0.01]
-iv <- LAC.Crust_type.SHP$indcls[LAC.Crust_type.SHP$pval<=0.01]
-pv <- LAC.Crust_type.SHP$pval[LAC.Crust_type.SHP$pval<=0.01]
-fr <- apply(ASV.SHP.no0[,-1]>0, 2, sum)[LAC.Crust_type.SHP$pval<=0.01]
+gr <- LAC.Crust_type.SHP$maxcls[LAC.Crust_type.SHP$pval<=0.05]
+iv <- LAC.Crust_type.SHP$indcls[LAC.Crust_type.SHP$pval<=0.05]
+pv <- LAC.Crust_type.SHP$pval[LAC.Crust_type.SHP$pval<=0.05]
+fr <- apply(ASV.SHP.no0[,-1]>0, 2, sum)[LAC.Crust_type.SHP$pval<=0.05]
 indvalsummary <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
 indvalsummary <- indvalsummary[order(indvalsummary$group, -indvalsummary$indval),]
 ```
