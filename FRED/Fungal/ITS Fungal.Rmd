@@ -1,0 +1,237 @@
+---
+title: "ITS Fungal"
+output: pdf_document
+---
+
+```{r}
+setwd("C:\\Users\\hanse\\Documents\\Jornada Research\\ITS Fungal Data")
+```
+
+```{r}
+
+```
+
+
+```{r}
+library(ape)
+library(vegan)
+library(plyr)
+library(dplyr)
+library(scales)
+library(grid)
+library(reshape2)
+library(phyloseq)
+library(magrittr)
+library(ggplot2)
+library(ggpubr)
+library(data.table)
+
+```
+
+
+```{r}
+meta = read.table ("ITS.Map.txt" ,
+                  header=TRUE,row.names=1,
+                  sep="\t",stringsAsFactors=FALSE)
+```
+
+```{r}
+head(meta)
+```
+
+```{r}
+sampleData <- sample_data(meta)
+```
+
+
+```{r}
+otus <- read.table("FC1013.otu_tableITS.txt",
+                   header=T,sep="\t",row.names = 1)
+otumat <- as(as.matrix(otus), "matrix")
+OTU = otu_table(otumat, taxa_are_rows = TRUE)
+```
+
+```{r}
+head(otus)
+```
+
+```{r}
+taxmat <- read.table("ITSFC1013.taxonomy.fix.txt", 
+                     header=T,sep="\t",row.names=1)
+taxmat <- as(as.matrix(taxmat),"matrix")
+TAX = tax_table(taxmat)
+```
+
+```{r}
+treefile = "FC1013.tree.phy"
+tree = read.tree(treefile)
+```
+
+```{r}
+physeq.Fun = phyloseq(OTU,TAX,sampleData,tree)
+```
+
+```{r}
+physeq.Fun
+```
+
+```{r}
+physeq.prune.Fun = prune_taxa(taxa_sums(physeq.Fun) > 1, physeq.Fun)
+```
+
+```{r}
+physeq.prune.Fun
+```
+
+```{r}
+readcount = data.table(as(sample_data(physeq.prune.Fun), "data.frame"),
+                 TotalReads = sample_sums(physeq.prune.Fun), 
+                 keep.rownames = TRUE)
+setnames(readcount, "rn", "SampleID")
+SeqDepth = ggplot(readcount, aes(TotalReads)) + geom_histogram() + ggtitle("Sequencing Depth")
+```
+
+```{r}
+readcount[order(readcount$TotalReads), c("SampleID", "TotalReads")]
+```
+
+
+
+```{r}
+SeqDepth
+```
+
+```{r}
+set.seed(711)
+Fungi = rarefy_even_depth(physeq.prune.Fun, replace = FALSE, trimOTUs = TRUE)
+```
+
+```{r}
+Fungi
+```
+
+## Alpha Diversity 
+
+```{r}
+plot_richness(Fungi)
+```
+
+
+## Shannon
+```{r}
+plot_richness(Fungi, x = "Site", color = "Site", measures = c("Shannon")) + 
+  geom_boxplot() + theme_bw() + ggtitle("Site Alpha Diversity") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0))
+```
+```{r}
+alpha.diversity <- estimate_richness(Fungi, measures = c("Shannon"))
+data.anova <- cbind(sample_data(Fungi), alpha.diversity)
+Fungi.shannon.anova <- aov(Shannon ~ Site, data.anova)
+summary(Fungi.shannon.anova)
+```
+
+```{r}
+TukeyHSD(Fungi.shannon.anova)
+```
+
+```{r}
+rich.fun.shannon <- estimate_richness(Fungi,measures = c("Shannon"))
+RFS = sample_data(Fungi)
+FunD.RFS = rich.fun.shannon[RFS[,'Disturbance'] == 'D']
+FunU.RFS = rich.fun.shannon[RFS[,'Disturbance'] == 'U']
+t.test(FunD.RFS, FunU.RFS)
+```
+
+## Observed
+```{r}
+plot_richness(Fungi, x = "Site", color = "Site", measures = c("Observed")) + 
+  geom_boxplot() + theme_bw() + ggtitle("Site Alpha Diversity") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0))
+```
+```{r}
+alpha.diversity <- estimate_richness(Fungi, measures = c("Observed"))
+data.anova <- cbind(sample_data(Fungi), alpha.diversity)
+Fungi.observed.anova <- aov(Observed ~ Site, data.anova)
+summary(Fungi.observed.anova)
+```
+
+```{r}
+TukeyHSD(Fungi.observed.anova)
+```
+```{r}
+rich.fun.Observed <- estimate_richness(Fungi,measures = c("Observed"))
+RFO = sample_data(Fungi)
+FunD.RFO = rich.fun.Observed[RFO[,'Disturbance'] == 'D']
+FunU.RFO = rich.fun.Observed[RFO[,'Disturbance'] == 'U']
+t.test(FunD.RFO, FunU.RFO)
+```
+
+
+## Chao1
+```{r}
+plot_richness(Fungi, x = "Site", color = "Site", measures = c("Chao1")) + 
+  geom_boxplot() + theme_bw() + ggtitle("Fungal Site Alpha Diversity") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0))
+```
+
+```{r}
+alpha.diversity <- estimate_richness(Fungi, measures = c("Chao1"))
+data.anova <- cbind(sample_data(Fungi), alpha.diversity)
+Fungi.Chao1.anova <- aov(Chao1 ~ Site, data.anova)
+summary(Fungi.Chao1.anova)
+```
+
+```{r}
+TukeyHSD(Fungi.Chao1.anova)
+```
+
+```{r}
+rich.fun.Chao1 <- estimate_richness(Fungi,measures = c("Chao1"))
+RFC = sample_data(Fungi)
+FunD.RFC = rich.fun.Chao1[RFC[,'Disturbance'] == 'D']
+FunU.RFC = rich.fun.Chao1[RFC[,'Disturbance'] == 'U']
+t.test(FunD.RFC, FunU.RFC)
+```
+
+## Abundance 
+
+```{r}
+pstop.prune.merge.Site.Fun <- merge_samples(Fungi, "Site")
+sample_data(pstop.prune.merge.Site.Fun)$Site <- factor(sample_names(pstop.prune.merge.Site.Fun))
+pstop.prune.transform.Site.Fun = transform_sample_counts(pstop.prune.merge.Site.Fun, 
+                                                      function(x) 100 * x/sum(x))
+```
+
+
+```{r}
+plot_bar(pstop.prune.transform.Site.Fun, x = "Sample", y = "Abundance", fill ="Phylum") + 
+  geom_bar(aes(color=Phylum, fill=Phylum), stat="identity", position="stack") +  geom_bar(aes(color=Phylum, fill=Phylum), stat="identity", position="stack") + ggtitle("Fungal Community by Vegetation Zone") 
+```
+
+## Beta diversity
+```{r}
+Fungi.nmds <- ordinate(Fungi, "NMDS", "unifrac")
+plot_ordination(Fungi, Fungi.nmds, type = "samples", 
+                color = "Site", shape = "Site")  + 
+  theme_bw() + ggtitle("Fungal Beta Diversity (NMDS) by Site") + 
+  stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Site))
+```
+
+```{r}
+ps.dist.fun = phyloseq::distance(Fungi, "unifrac")
+Fun.Beta.adonis<-adonis(ps.dist.fun~Site, as(sample_data(Fungi),"data.frame"))
+Fun.Beta.adonis
+```
+```
+
+
+
+
+
+
+
+
+
