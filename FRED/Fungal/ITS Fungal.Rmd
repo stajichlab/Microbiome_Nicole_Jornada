@@ -269,7 +269,7 @@ add ordination plot to a variable "pcca"
 
 ```{r}
 pcca = plot_ordination(Fungi, physeq.prune.rarefy.ps.cca, type = "samples", 
-                       color = "Site", shape = "Site")
+                       color = "Site", shape = "Site") + geom_point(size=5)
 ```
 
 ###STEP14: Get environmental distance from CCA to arrows
@@ -317,7 +317,7 @@ pcca.envfit = pcca + geom_segment(arrow_map, size = 0.8, data = arrowdf, color =
 Now, the CCA plot should inculde environmental arrows.
 
 ```{r}
-pcca.envfit
+pcca.envfit 
 ```
 
 
