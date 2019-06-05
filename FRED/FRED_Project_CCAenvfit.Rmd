@@ -1,7 +1,7 @@
 ---
 title: "FRED_Project_CCAenvfit"
 author: "Nat Pombubpa"
-date: "Updated on January 4, 2019"
+date: "Updated on June 4, 2019"
 output: html_document
 ---
 
@@ -321,10 +321,20 @@ str(ps.dist)
 ```
 
 
+```{r}
+head(meta)
+```
 
 
+```{r}
+sample_data(physeq.prune.rarefy)$Site = factor(sample_data(physeq.prune.rarefy)$Site, levels = c("Creosote", "Playa", "Tarbush", "Mesquite", "Grassland"))
+```
 
-
+```{r}
+Heatmap.physeq = prune_taxa(names(sort(taxa_sums(physeq.prune.rarefy),TRUE)[1:50]), physeq.prune.rarefy)
+Heatmap.plot = plot_heatmap(Heatmap.physeq, "PCoA", "unifrac", "Site", "Genus", sample.order = "Site")+ ggtitle("Bacterial heatmap (top 500)") + theme(plot.title = element_text(hjust = 0.5))
+print(Heatmap.plot)
+```
 
 
 

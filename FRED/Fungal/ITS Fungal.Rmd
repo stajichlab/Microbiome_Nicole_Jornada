@@ -1,6 +1,7 @@
 ---
 title: "ITS Fungal"
 output: pdf_document
+date: "Updated on June 5, 2019"
 ---
 
 ```{r}
@@ -12,7 +13,7 @@ setwd("C:\\Users\\hanse\\Documents\\Jornada Research\\ITS Fungal Data")
 ```
 
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 library(ape)
 library(vegan)
 library(plyr)
@@ -30,7 +31,7 @@ library(data.table)
 
 
 ```{r}
-meta = read.table ("ITS.Map.txt" ,
+meta = read.table ("ITS_Mapping_File_Feb21.txt" ,
                   header=TRUE,row.names=1,
                   sep="\t",stringsAsFactors=FALSE)
 ```
@@ -103,7 +104,7 @@ SeqDepth
 
 ```{r}
 set.seed(711)
-Fungi = rarefy_even_depth(physeq.prune.Fun, replace = FALSE, trimOTUs = TRUE)
+Fungi = rarefy_even_depth(physeq.prune.Fun, sample.size = 17673, replace = FALSE, trimOTUs = TRUE)
 ```
 
 ```{r}
@@ -225,13 +226,103 @@ ps.dist.fun = phyloseq::distance(Fungi, "unifrac")
 Fun.Beta.adonis<-adonis(ps.dist.fun~Site, as(sample_data(Fungi),"data.frame"))
 Fun.Beta.adonis
 ```
+
+
+###STEP12: Calculate ordinate and distance using CCA + PERMANOVA
+
+```{r}
+ps.dist = phyloseq::distance(Fungi, "bray")
+```
+
+Using adonis funciton to run PERMANOVA on distance matrix generated from command above. The currently preferred analysis for evaluating differences among groups is PERMANOVA. This analysis partitions sums of squares using dissimilarities, evaluating differences in the centroids of groups in multivariate space. The vegan functions “adonis” is used to compute PERMANOVA in R. 
+```{r}
+meta
 ```
 
 
+```{r}
+set.seed(1)
+adonis(ps.dist ~EC+pH+Clay+Silt+Sand+Gravel
+                                       +Sand_Fraction..1.2.mm+Sand_Fraction...5.1.mm+Sand_Fraction...25..5.mm
+                                       +Sand_Fraction...1..25.mm+Sand_Fraction...05..1mm+MSM_No_Cover
+                                       +MSM_Total_Cover+MSM_Thick_Cover
+                                       +MSM_Patchy_Cover+MSM_Thick_Patchy_Cover, as(sample_data(Fungi),"data.frame"))
+```
+
+Using "formaula" to indicate environmental factors for distance/ordinate calculation. We will only take significant environmental vairables from PERMANOVA results which are EC, pH, Clay, Silt, Gravel, and Sand_Fraction.25to.5mm.
+
+```{r}
+physeq.prune.rarefy.ps.cca <- ordinate(Fungi, "CCA", 
+                                       formula = ~EC+pH+Clay+Silt+Sand+Gravel
+                                       +Sand_Fraction..1.2.mm+Sand_Fraction...5.1.mm+Sand_Fraction...25..5.mm
+                                       +Sand_Fraction...1..25.mm+MSM_No_Cover+MSM_Total_Cover)
+```
+
+###STEP13: Plot ordination
+
+```{r}
+plot_ordination(Fungi, physeq.prune.rarefy.ps.cca, type = "samples", 
+                color = "Site", shape = "Site", label = "ID") + ggtitle("Fungal Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+add ordination plot to a variable "pcca"
+
+```{r}
+pcca = plot_ordination(Fungi, physeq.prune.rarefy.ps.cca, type = "samples", 
+                       color = "Site", shape = "Site")
+```
+
+###STEP14: Get environmental distance from CCA to arrows
+
+```{r}
+arrowdist <- vegan::scores(physeq.prune.rarefy.ps.cca, display = c("bp"))
+```
+
+Check data for arrow distance, you should see your environmental factor with distances (CCA1 and CCA2)
+
+```{r}
+head(arrowdist)
+```
+
+###STEP15: Add arrow distance to data frame
+
+```{r}
+arrowdf <- data.frame(labels = rownames(arrowdist), arrowdist)
+```
+
+Check data frame for arrow distance
+
+```{r} 
+head(arrowdf)
+```
+
+###STEP16: Define arrow starting point and labels
+
+```{r}
+arrow_map = aes(xend = CCA1, yend = CCA2, x = 0, y = 0, shape = NULL, color = NULL, label = labels)
+label_map = aes(x = 1.1 * CCA1, y = 1.1 * CCA2, shape = NULL, color = NULL, label = labels)
+```
+
+###STEP17: Add environemntal arrow data to plot 
+
+```{r warning=FALSE}
+arrowhead = arrow(length = unit(0.05, "npc"))
+pcca.envfit = pcca + geom_segment(arrow_map, size = 0.8, data = arrowdf, color = "gray", 
+    arrow = arrowhead) + geom_text(label_map, size = 3, data = arrowdf) + 
+  ggtitle("Fungal Beta Diversity (CCA)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+###STEP18: CCA plot with environmental fit
+
+Now, the CCA plot should inculde environmental arrows.
+
+```{r}
+pcca.envfit
+```
 
 
-
-
-
-
-
+```{r warning=FALSE}
+pdf("Fungal_Beta_Diversity_CCA.pdf", width = 10, height = 8 )
+pcca.envfit
+dev.off()
+```

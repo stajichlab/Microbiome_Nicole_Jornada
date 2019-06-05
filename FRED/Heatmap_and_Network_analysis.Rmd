@@ -1,0 +1,192 @@
+---
+title: "Heatmap and Network Analysis"
+author: "Nat Pombubpa"
+date: "6/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#This is a documentation for basic usage of heatmap and network analysis
+Note: environmental data are imported with metadata/mapping file. This approach use phyloseq object and plot_ordination.
+
+
+###STEP1: Load all necessary packages for analysis
+More information about Phyloseq can be found at the following link: [Phyloseq](https://joey711.github.io/phyloseq/)
+If you get error in this step, you probably need to install any packages which causes error.
+
+```{r warning=FALSE, message=FALSE}
+library(ape)
+library(vegan)
+library(plyr)
+library(dplyr)
+library(scales)
+library(grid)
+library(reshape2)
+library(phyloseq)
+library(magrittr)
+library(ggplot2)
+library(ggpubr)
+library(data.table)
+library(SpiecEasi)
+library(igraph)
+```
+
+###STEP2: Import Mapping file (metadate file)
+1.Check mapping file before import to R, R will automatically change sample name that starts with number or contain “-” in sample name. If you get error in this step, you should check sample name first. 
+
+2.First column of first row should not start with #, R will not read the first row that starts with '#'
+
+3.You can choose which samples to include in analysis by indicating specific group in the column
+
+4.This mapping file had been modified to remove special characters in environmental data
+
+```{r warning=FALSE}
+meta = read.table("FredMetaTest.txt",
+                  header=TRUE,row.names=1,
+                  sep="\t",stringsAsFactors=FALSE)
+```
+
+###STEP3: Construct sample_data-class using imported metadata
+
+```{r warning=FALSE}
+sampleData <- sample_data(meta)
+```
+
+###STEP4: Import OTU table
+OTU table from Jornada 16S data is “Pietras16S.otu_table.fix.txt”.
+
+```{r warning=FALSE}
+otus <- read.table("Pietras16S.otu_table.fix.txt",
+                   header=T,sep="\t",row.names = 1)
+otumat <- as(as.matrix(otus), "matrix")
+OTU = otu_table(otumat, taxa_are_rows = TRUE)
+```
+
+###STEP5: Import taxonomy table
+Taxonmy table generated from AMPtk need to be rearranged using following script.
+
+“perl rdp_taxonmy2mat.pl<Input_taxonmy.txt>Output_taxonomy.txt”
+
+rdp_taxonomy2mat.pl was created by Professor Jason E. Stajich
+
+```{r warning=FALSE}
+taxmat <- read.table("Pietras16S.taxonomy.fix.txt", 
+                     header=T,sep="\t",row.names=1)
+taxmat <- as(as.matrix(taxmat),"matrix")
+TAX = tax_table(taxmat)
+```
+
+###STEP6: Import phylogenetic tree
+Phylogenetic tree can also be include for furthur phylogenetic analysis. The tree was generated when we run AMPtk on Discovery and can be dowload using Rsync.
+<p> Rsync -ai yourusername[AT]discovery.nmsu.edu:/PATH_to_File PATH_to_Working_Directory <br/>
+
+```{r warning=FALSE}
+treefile = "Pietras16S.tree.phy"
+tree = read.tree(treefile)
+```
+
+###STEP7: Construct Phyloseq object
+To construct phyloseq object, otu table, taxonomy table, and sampleData are required. Phylogenetic tree can be included, but it is not necessary for constructing phyloseq object.
+Construct Phyloseq object called "Physeq"
+
+```{r warning=FALSE}
+physeq = phyloseq(OTU,TAX,sampleData,tree)
+```
+
+###STEP8: Check phyloseq object
+This should indicate that your physeq is a "phyloseq-class experiment-level object"
+
+```{r warning=FALSE}
+physeq
+```
+
+###STEP9: Remove singletons
+Remove any OTUs that present only one time.
+
+```{r }
+physeq.prune = prune_taxa(taxa_sums(physeq) > 1, physeq)
+```
+
+```{r warning=FALSE}
+physeq.prune
+```
+
+###STEP10: Check read counts to check dataset
+Check read counts: any samples that have very low reads should be removed.
+[Ref](http://evomics.org/wp-content/uploads/2016/01/phyloseq-Lab-01-Answers.html)
+
+```{r}
+readcount = data.table(as(sample_data(physeq.prune), "data.frame"),
+                 TotalReads = sample_sums(physeq.prune), 
+                 keep.rownames = TRUE)
+setnames(readcount, "rn", "SampleID")
+
+#For plotting, use command below.
+#SeqDepth = ggplot(readcount, aes(TotalReads)) + geom_histogram() + ggtitle("Sequencing Depth")
+```
+
+```{r}
+readcount = readcount[order(readcount$TotalReads), c("SampleID", "TotalReads")]
+```
+
+```{r}
+head(readcount)
+```
+
+###STEP11:Rarefy OTUs to a minimum number of reads
+Rarefy OTUs (remove any samples that has very low number of reads). In this case, no sample was remove because number of reads are over 20,000 however, sample.size was indicated to rarefy number reads to the smallest size (lowest number of reads).
+```{r warning=FALSE}
+set.seed(711)
+physeq.prune.rarefy = rarefy_even_depth(physeq.prune, sample.size = 29454, replace = FALSE, trimOTUs = TRUE)
+physeq.prune.rarefy
+```
+
+###STEP12: Heatmap (default)
+
+We will use subset data to show heatmap default.
+
+```{r}
+Heatmap.physeq = prune_taxa(names(sort(taxa_sums(physeq.prune.rarefy),TRUE)[1:150]), physeq.prune.rarefy)
+```
+
+```{r}
+plot_heatmap(Heatmap.physeq)
+```
+
+###STEP13: Specify details for your heatmap
+
+Use "sample.label" to label each sample by site
+Use "taxa.lable" to label each OTU by it's "Class" level.
+Use "title" to add plot title
+
+Need more details? Please check following link
+[Ref](https://rdrr.io/bioc/phyloseq/man/plot_heatmap.html)
+
+```{r}
+plot_heatmap(Heatmap.physeq, sample.label = "Site", taxa.label = "Class", title = "Bacterial heatmap (top 150 OTUs)")
+```
+
+Use "sample.order" to reorder heatmap samples by Site
+
+```{r}
+plot_heatmap(Heatmap.physeq, sample.label = "Site", taxa.label = "Class",  sample.order = "Site", title = "Bacterial heatmap (top 150 OTUs)") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
