@@ -269,7 +269,7 @@ add ordination plot to a variable "pcca"
 
 ```{r}
 pcca = plot_ordination(Fungi, physeq.prune.rarefy.ps.cca, type = "samples", 
-                       color = "Site", shape = "Site") + geom_point(size=5)
+                       color = "Site", shape = "Site") + geom_point(size=5) 
 ```
 
 ###STEP14: Get environmental distance from CCA to arrows
@@ -326,3 +326,7 @@ pdf("Fungal_Beta_Diversity_CCA.pdf", width = 10, height = 8 )
 pcca.envfit
 dev.off()
 ```
+
+
+
+
