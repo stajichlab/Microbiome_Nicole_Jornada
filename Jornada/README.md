@@ -1,12 +1,14 @@
 # Jornada Data Analysis
 
 This is repository for Microbiome analysis for Nicole's data from Jornada(NMSU). 
-Currently, these data are from FC913(16S) and FC1013(ITS) at UCR.
+Currently, these data are extracted from FC913(16S) and FC1013(ITS) at UCR.
+
+Fred's dataset contains 30 samples.
 
 ## Current analysis include
 
-1. [Bacteria_Q2](Bacteria_Q2/)
+1. [Bacteria_Q2](Bacteria_Q2/) : 16S ASV data from Qiime2 (projects/Desert_microbes/Amplicon/Flowcell913_NP16SMiseq_July2018/Nat_Qiime2)
 
-2. [Fungi_AMPtk](Fungi_AMPtk/)
+2. [Fungi_ASV](Fungi_ASV/) : ITS ASV data from AMPtk (projects/Desert_microbes/Amplicon/Flowcell1013_NPITSMiseq_Dec2018/Nat_amptk_ASV)
 
-*-Nat- updated on 02/25/19*
+*-Nat- updated on 09/24/19*
