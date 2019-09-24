@@ -184,7 +184,7 @@ physeq
 Remove any ASVs that present only 10 times.
 
 ```{r}
-physeq.prune = prune_taxa(taxa_sums(physeq) > 10, physeq)
+physeq.prune = prune_taxa(taxa_sums(physeq) > 5, physeq)
 ```
 
 ```{r}
@@ -220,7 +220,7 @@ Rarefy OTUs (remove any samples that has very low number of reads)
 If this step work fine, you have successfully imported data to R and completely generate phyloseq object as "physeq.prune.rarefy".
 ```{r warning=FALSE}
 set.seed(711)
-physeq.prune.rarefy = rarefy_even_depth(physeq.prune, sample.size = 34456, replace = FALSE, trimOTUs = TRUE)
+physeq.prune.rarefy = rarefy_even_depth(physeq.prune, sample.size = 34605, replace = FALSE, trimOTUs = TRUE)
 physeq.prune.rarefy
 ```
 
@@ -232,7 +232,7 @@ Filtered_OTUs_table = otu_table(physeq.prune.rarefy)
 
 Save "filtered" otu table from Phyloseq for Vegan NMDS
 ```{r}
-write.csv(Filtered_OTUs_table, file="Filtered_OTUs_table.csv")
+write.csv(Filtered_OTUs_table, file="Filtered_ASVs_table.csv")
 ```
 
 ###STEP12.2: Extract Taxonomy table from Phyloseq
@@ -253,6 +253,7 @@ Get actual name of Kingdom
 Kingdoms = as.character(get_taxa_unique(physeq.prune.rarefy, "Kingdom"))
 Kingdoms = Kingdoms[complete.cases(Kingdoms)]
 ```
+
 ###STEP13.1: Subset Kingdom Archaea
 ```{r}
 physeq.prune.rarefy.archaea = subset_taxa(physeq.prune.rarefy, Kingdom == "D_0__Archaea")
@@ -300,6 +301,7 @@ physeq.prune.rarefy.archaea.ps.anova.chao1 <- aov(Chao1 ~ Site, data.anova)
 summary(physeq.prune.rarefy.archaea.ps.anova.chao1)
 
 ```
+
 ```{r}
 TukeyHSD(physeq.prune.rarefy.archaea.ps.anova.chao1)
 ```
@@ -347,18 +349,18 @@ plot_bar(pstop.prune.transform.Site.archaea, x = "Site", y = "Abundance", fill =
 ```{r}
 physeq.prune.rarefy.ps.ord.archaea <- ordinate(physeq.prune.rarefy.archaea, "NMDS", "unifrac")
 
-plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea)
+#plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea)
 
-plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea, type = "samples", color = "Site")
+#plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea, type = "samples", color = "Site")
 
-plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea, type = "samples", 
-                color = "Site", shape = "Site") + 
-  theme_bw()
+#plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea, type = "samples", 
+#                color = "Site", shape = "Site") + 
+#  theme_bw()
   
-plot_ordination(physeq.prune.rarefy.archaea, physeq.prune.rarefy.ps.ord.archaea, type = "samples", 
+plot_ordination(physeq.prune.rarefy, physeq.prune.rarefy.ps.ord.archaea, type = "samples", 
                 color = "Site", shape = "Site")  + 
-  theme_bw() + ggtitle("Archaeal Beta Diversity (NMDS) by Site") + 
-  stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Site))
+  theme_bw() + ggtitle("Archaeal Beta Diversity (NMDS) by Site") #+ 
+  #stat_ellipse(geom = "polygon", alpha = 1/8, aes(fill = Site))
   
 
 ```
