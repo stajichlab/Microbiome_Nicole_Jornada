@@ -1,7 +1,6 @@
 ---
-title: "Jornada_Q2_bacteria"
+title: "Jornada_Q2_bacteria Greengenes"
 author: "Nat Pombubpa"
-modified by: "Nicole Pietrasiak""
 date: "updated on 2/25/2019"
 output: html_document
 ---
@@ -38,12 +37,12 @@ library(tidyverse)
 
 ###STEP2: Transition data from Qiime2 to Phyloseq
 Note: otu table and taxonomy table have been fixed right after Qiime2. Nat's Qiime2 script already include this step.
-However, you can simply fix by changing "#Feature ID" to "OTU ID" ot "OTU.ID" and the following commnand should work fine.
+However, you can simply fix by changing "#Feature ID" to "OTU ID" or "OTU.ID" and the following commnand should work fine.
 
 ####STEP2.1: Import otu table from Qiime2
 
 ```{r}
-otu = read.table(file="JornadaBacQ2FWLEsilva515806.V1.otu_table.fix.txt", header=T, sep='\t')
+otu = read.table(file="JornadaBacQ2FWLEgg515806.otu_table.fix.txt", header=T, sep='\t')
 ```
 
 ```{r}
@@ -112,7 +111,7 @@ write.csv(tax_filtered, file="taxonomy_phyloseq_fix.csv")
 ###STEP3: Import otu table for analysis using Phyloseq 
 
 ```{r warning=FALSE}
-otus <- read.table("JornadaBacQ2FWLEsilva515806.V1.otu_table.fix.txt",
+otus <- read.table("JornadaBacQ2FWLEgg515806.otu_table.fix.txt",
                    header=T,sep="\t",row.names = 1)
 otumat <- as(as.matrix(otus), "matrix")
 OTU = otu_table(otumat, taxa_are_rows = TRUE)
@@ -232,7 +231,7 @@ Filtered_OTUs_table = otu_table(physeq.prune.rarefy)
 
 Save "filtered" otu table from Phyloseq for Vegan NMDS
 ```{r}
-write.csv(Filtered_OTUs_table, file="Filtered_ASVs_table.csv")
+write.csv(Filtered_OTUs_table, file="Filtered_ASVs_table_Greengenes.csv")
 ```
 
 ###STEP12.2: Extract Taxonomy table from Phyloseq
@@ -243,7 +242,7 @@ Filtered_TAX_table = tax_table(physeq.prune.rarefy)
 
 Save "filtered" TAX table from Phyloseq for Vegan NMDS
 ```{r}
-write.csv(Filtered_TAX_table, file="Filtered_TAX_table.csv")
+write.csv(Filtered_TAX_table, file="Filtered_TAX_table_Greengenes.csv")
 ```
 
 ####STEP13: Subset Kingdoms
