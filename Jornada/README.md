@@ -13,4 +13,4 @@ Fred's dataset contains 30 samples.
 
 3. [Fungi_ASV](Fungi_ASV/) : ITS ASV data from AMPtk (projects/Desert_microbes/Amplicon/Flowcell1013_NPITSMiseq_Dec2018/Nat_amptk_ASV)
 
-*-Nat- updated on 09/24/19*
+*-Nat- updated on 09/27/19*
